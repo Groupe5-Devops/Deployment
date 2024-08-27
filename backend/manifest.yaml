@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-svc
+spec:
+  type: NodePort
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+      nodePort: 30003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deploy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      name: backend
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backendcontainer
+          image: skinnysyddocker/kube-test-back:test667
+          ports:
+            - containerPort: 8080
+          env: 
+            - name: DB_HOST   
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-conf  
+                  key: host 
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-conf
+                  key: dbName
+            - name: MYSQL_USER
+              valueFrom:
+                 secretKeyRef:
+                   name: mysql-credentials 
+                   key: mysql_user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                 secretKeyRef:
+                   name: mysql-credentials
+                   key: mysql_password
+
+

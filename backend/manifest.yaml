@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: backendcontainer
-          image: skinnysyddocker/kube-test-back:test667
+          image: us-central1-docker.pkg.dev/citric-period-433211-i6/appmanagercr/servermanagerback:7
           ports:
             - containerPort: 8080
           env: 
@@ -53,5 +53,7 @@ spec:
                  secretKeyRef:
                    name: mysql-credentials
                    key: mysql_password
+      imagePullSecrets:
+      - name: gcr-json-key
 
 

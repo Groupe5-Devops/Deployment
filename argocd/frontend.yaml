@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: frontend
+  namespace: argocd
+  annotations:
+    notifications.argoproj.io/subscribe.on-deployed.slack: argocd-state
+    notifications.argoproj.io/subscribe.on-sync-succeeded.slack: argocd-state
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Groupe5-Devops/Deployment.git
+    targetRevision: main
+    path: frontend
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    retry:
+      limit: 5
+      backoff:
+        duration: "5s"
+        factor: 2
+        maxDuration: "3m"

@@ -1,0 +1,64 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+    tier: database
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql
+        tier: database
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:latest
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-credentials
+                  key: mysql_user
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-credentials
+                  key: mysql_password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-conf
+                  key: dbName
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-credentials
+                  key: mysql_root_password
+            # - name: MYSQL_ALLOW_EMPTY_PASSWORD
+            #   value: "yes"
+
+          ports:
+            - containerPort: 3306
+              name: mysqlport
+          volumeMounts:
+            - mountPath: /var/lib/minesql/data
+              name: mysql-persistance-storage-nw
+            # - mountPath: /docker-entrypoint-initdb.d
+            #   name: init-script
+            #   readOnly: true
+      volumes:
+        - name: mysql-persistance-storage-nw
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim-nw
+        # - name: init-script
+        #   configMap:
+        #     name: mysql-init-script

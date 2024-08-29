@@ -1,0 +1,92 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-down
+  namespace: crontest
+spec:
+  schedule: "*/2 * * * *"  # Adjust the schedule as needed
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: kubectl-scaler
+          containers:
+          - name: scale-down
+            image: bitnami/kubectl:1.25.11
+            command: ["/bin/sh", "-c"]
+            args:
+            - kubectl scale deployment nginx --replicas=0
+          restartPolicy: OnFailure
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: scale-up
+  namespace: crontest
+spec:
+  schedule: "*/3 * * * *"  # Adjust the schedule to be later than the scale-down
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: kubectl-scaler
+          containers:
+          - name: scale-up
+            image: bitnami/kubectl:1.25.11
+            command: ["/bin/sh", "-c"]
+            args:
+            - kubectl scale deployment nginx --replicas=1
+          restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubectl-scaler
+  namespace: crontest
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubectl-scaler
+  namespace: crontest
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments", "deployments/scale"]
+  verbs: ["get", "list", "watch", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubectl-scaler
+  namespace: crontest
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubectl-scaler
+subjects:
+- kind: ServiceAccount
+  name: kubectl-scaler
+  namespace: crontest
+

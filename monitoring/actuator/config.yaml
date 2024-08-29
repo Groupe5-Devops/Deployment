@@ -1,0 +1,8 @@
+prometheus:
+  prometheusSpec:
+    additionalScrapeConfigs:
+      - job_name: "spring-actuator"
+        metrics_path: "/actuator/prometheus"
+        static_configs:
+          - targets:
+            - 34.133.5.48:30003

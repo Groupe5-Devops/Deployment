@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backend-monitor
+  namespace: monitoring  # This should match the namespace where Prometheus Operator is installed
+spec:
+  selector:
+    matchLabels:
+      app: backend  # This should match the labels of your backend-svc
+  namespaceSelector:
+    matchNames:
+      - default  # The namespace where your Spring Boot app is deployed
+  endpoints:
+  - port: http  # This should match the port name in your Service
+    path: /actuator/prometheus
+    interval: 15s

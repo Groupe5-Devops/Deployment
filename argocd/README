@@ -1,0 +1,18 @@
+Requirements
+Installed kubectl command-line tool.
+Have a kubeconfig file (default location is ~/.kube/config).
+CoreDNS. Can be enabled for microk8s by microk8s enable dns && microk8s stop && microk8s start
+
+1. Install Argo CD
+
+$ kubectl create namespace argocd
+$ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+2- CONFIG ARGOCD 
+
+$ kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+
+$ kubectl exec -it -n argocd pod/argocd-server-7c746df554-pmdtq  -- argocd admin initial-password
+
+
+

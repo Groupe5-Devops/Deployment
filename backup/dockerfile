@@ -1,0 +1,41 @@
+# Use a minimal Alpine image
+FROM --platform=$BUILDPLATFORM alpine:3.9
+
+ARG OS_ARCHITECTURE="x86_64"
+ARG TZ='Europe/Madrid'
+
+ENV CLOUD_SDK_VERSION="394.0.0"
+ENV DEFAULT_TZ ${TZ}
+ENV PATH="/google-cloud-sdk/bin:$PATH"
+
+# Install dependencies required for gsutil and Google Cloud SDK
+RUN apk add --no-cache \
+    bash \
+    curl \
+    python3 \
+    tzdata \
+    gnupg \
+    libffi \
+    libgcc \
+    libc6-compat \
+    mysql-client
+
+# Download and install Google Cloud SDK
+RUN curl -O https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-${OS_ARCHITECTURE}.tar.gz && \
+    tar xzf google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-${OS_ARCHITECTURE}.tar.gz && \
+    rm google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-${OS_ARCHITECTURE}.tar.gz && \
+    /google-cloud-sdk/install.sh --quiet && \
+    gcloud config set core/disable_usage_reporting true && \
+    gcloud config set component_manager/disable_update_check true && \
+    gcloud config set metrics/environment github_docker_image && \
+    cp /usr/share/zoneinfo/${DEFAULT_TZ} /etc/localtime
+
+# Verify installation
+RUN gsutil --version
+
+# Remove unnecessary files and packages to reduce image size
+RUN apk del curl tzdata gnupg libffi && \
+    rm -rf /var/cache/apk/* /google-cloud-sdk/.install/* /google-cloud-sdk/.*.bak
+
+# Set the default command
+CMD ["sh"]

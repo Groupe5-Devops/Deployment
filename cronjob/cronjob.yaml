@@ -1,10 +1,10 @@
 ---
-#scale up the services to full
+#scale up the services the morning
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: scale-up-morning
-  namespace: crontest
+  name: scaling-up-morning
+  namespace: default
 spec:
   schedule: "0 8 * * 1-5"  # At 08:00 on weekdays
   jobTemplate:
@@ -21,12 +21,12 @@ spec:
               kubectl scale deployment front-deploy --replicas=2
           restartPolicy: OnFailure
 ---
-#scale down to 50%
+#scale down to 50% the evening
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: scale-down-evening
-  namespace: crontest
+  name: scaling-down-evening
+  namespace: default
 spec:
   schedule: "0 18 * * 1-5"  # At 18:00 on weekdays
   jobTemplate:
@@ -43,12 +43,12 @@ spec:
               kubectl scale deployment front-deploy --replicas=1
           restartPolicy: OnFailure
 ---
-# scale down to 0 at 9pm on weekdays
+# scale down to 0 at 9pm on weekdays , the weekend is a bonus xD
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: final-scale-down
-  namespace: crontest
+  name: scaling-down-night
+  namespace: default
 spec:
   schedule: "0 21 * * 1-5"  # At 21:00 on weekdays
   jobTemplate:
@@ -69,14 +69,14 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: kubectl-scaler
-  namespace: crontest
+  namespace: default
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: kubectl-scaler
-  namespace: crontest
+  namespace: default
 rules:
 - apiGroups: ["apps"]
   resources: ["deployments", "deployments/scale"]
@@ -86,7 +86,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: kubectl-scaler
-  namespace: crontest
+  namespace: default
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
@@ -94,5 +94,5 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kubectl-scaler
-  namespace: crontest
+  namespace: default
 

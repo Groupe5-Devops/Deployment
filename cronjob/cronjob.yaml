@@ -1,62 +1,68 @@
 ---
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx
-  labels:
-    app: nginx
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:latest
----
+#scale up the services to full
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: scale-down
+  name: scale-up-morning
   namespace: crontest
 spec:
-  schedule: "*/2 * * * *"  # Adjust the schedule as needed
+  schedule: "0 8 * * 1-5"  # At 08:00 on weekdays
   jobTemplate:
     spec:
       template:
         spec:
           serviceAccountName: kubectl-scaler
           containers:
-          - name: scale-down
+          - name: scale-up-morning
             image: bitnami/kubectl:1.25.11
             command: ["/bin/sh", "-c"]
             args:
-            - kubectl scale deployment nginx --replicas=0
+            - kubectl scale deployment backend-deploy --replicas=2 && \
+              kubectl scale deployment front-deploy --replicas=2
           restartPolicy: OnFailure
 ---
+#scale down to 50%
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: scale-up
+  name: scale-down-evening
   namespace: crontest
 spec:
-  schedule: "*/3 * * * *"  # Adjust the schedule to be later than the scale-down
+  schedule: "0 18 * * 1-5"  # At 18:00 on weekdays
   jobTemplate:
     spec:
       template:
         spec:
           serviceAccountName: kubectl-scaler
           containers:
-          - name: scale-up
+          - name: scale-down-evening
             image: bitnami/kubectl:1.25.11
             command: ["/bin/sh", "-c"]
             args:
-            - kubectl scale deployment nginx --replicas=1
+            - kubectl scale deployment backend-deploy --replicas=1 && \
+              kubectl scale deployment front-deploy --replicas=1
+          restartPolicy: OnFailure
+---
+# scale down to 0 at 9pm on weekdays
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: final-scale-down
+  namespace: crontest
+spec:
+  schedule: "0 21 * * 1-5"  # At 21:00 on weekdays
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: kubectl-scaler
+          containers:
+          - name: final-scale-down
+            image: bitnami/kubectl:1.25.11
+            command: ["/bin/sh", "-c"]
+            args:
+            - kubectl scale deployment backend-deploy --replicas=0 && \
+              kubectl scale deployment front-deploy --replicas=0
           restartPolicy: OnFailure
 ---
 apiVersion: v1

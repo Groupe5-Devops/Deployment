@@ -30,7 +30,7 @@ spec:  #
     spec:
       containers:
         - name: frontendcontainer
-          image: us-central1-docker.pkg.dev/citric-period-433211-i6/appmanagercr/servermanagerfront:1.26
+          image: us-central1-docker.pkg.dev/citric-period-433211-i6/appmanagercr/servermanagerfront:1.5
           ports:
             - containerPort: 80
       imagePullSecrets:

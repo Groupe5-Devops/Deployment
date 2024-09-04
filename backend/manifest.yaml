@@ -29,7 +29,7 @@ spec:
     spec:
       containers:
         - name: backendcontainer
-          image: us-central1-docker.pkg.dev/citric-period-433211-i6/appmanagercr/servermanagerback:1.14
+          image: us-central1-docker.pkg.dev/citric-period-433211-i6/appmanagercr/servermanagerback:1.24
           ports:
             - containerPort: 8080
           env: 

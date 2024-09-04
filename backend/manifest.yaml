@@ -53,6 +53,13 @@ spec:
                  secretKeyRef:
                    name: mysql-credentials
                    key: mysql_password
+          resources:
+            requests:
+              memory: "350Mi"
+              cpu: "150m"
+            limits:
+              memory: "550Mi"
+              cpu: "250m"
       imagePullSecrets:
       - name: gcr-json-key
 

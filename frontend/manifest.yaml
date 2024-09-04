@@ -33,6 +33,13 @@ spec:  #
           image: us-central1-docker.pkg.dev/citric-period-433211-i6/appmanagercr/servermanagerfront:1.15
           ports:
             - containerPort: 80
+          resources:
+            requests:
+              memory: "50Mi"
+              cpu: "100m"
+            limits:
+              memory: "150Mi"
+              cpu: "200m"
       imagePullSecrets:
       - name: gcr-json-key
 

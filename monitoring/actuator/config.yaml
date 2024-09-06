@@ -5,4 +5,4 @@ prometheus:
         metrics_path: "/actuator/prometheus"
         static_configs:
           - targets:
-            - 34.133.5.48:30003
+            - 34.70.132.118:30003
